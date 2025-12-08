@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-// Ensure this path matches your project structure.
-// If this import fails, check if the file exists in src/assets/
-import logoFallback from "/src/assets/logo.png";
+
+const logoFallback = "https://i.postimg.cc/3Njyk9Zq/INTEGRITY-AI-WHITE-LOGO.png";
 
 interface LogoProps {
   className?: string;
@@ -26,35 +25,12 @@ export const Logo: React.FC<LogoProps> = ({
   // RENDER: Fallback View (Icon + Text) if main images fail
   if (imgError) {
     return (
-      <div className={`flex items-center gap-3 ${className} select-none`}>
+      <div className={`flex items-center gap-5 ${className} select-none`}>
         <img
           src={logoFallback}
           alt="Tertius Icon"
-          className="h-full w-auto aspect-square object-contain"
+          className="h-48 w-auto aspect-square object-contain"
         />
-
-        {showText && (
-          <div
-            className={`flex flex-col justify-center ${
-              variant === "light" ? "text-white" : "text-slate-800"
-            }`}
-          >
-            <span
-              className={`font-bold tracking-tight leading-none font-sans ${
-                isLarge ? "text-2xl" : "text-lg"
-              }`}
-            >
-              TERTIUS
-            </span>
-            <span
-              className={`font-semibold tracking-[0.2em] uppercase text-[#8B1E1E] leading-none mt-0.5 ${
-                isLarge ? "text-xs" : "text-[9px]"
-              }`}
-            >
-              Integrity AI
-            </span>
-          </div>
-        )}
       </div>
     );
   }
