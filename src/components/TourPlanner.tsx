@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
-import { MonthlyTourPlan, TourPlanStatus, UserProfile, UserRole, Territory } from '../types';
+import { MonthlyTourPlan, TourPlanStatus, UserProfile, UserRole } from '../types';
 import { getTourPlan, saveTourPlan, getAllUsers } from '../services/mockDatabase';
 import { Button } from './Button';
 import { getMonthName } from '../utils';
-import { Calendar, Save, CheckCircle, Lock, Users, MapPin, X } from 'lucide-react';
+import { Calendar, Save, CheckCircle, MapPin, X, Navigation, Send } from 'lucide-react';
 import { optimizeRoute } from '../services/routeOptimizer';
 import { getCustomersByTerritory } from '../services/mockDatabase';
 import { Customer } from '../types';
@@ -94,63 +93,85 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
     }
   };
 
-  if (!plan) return <div>Loading...</div>;
+  if (!plan) return (
+      <div className="flex flex-col items-center justify-center h-64 text-slate-500 gap-3">
+          <div className="w-8 h-8 border-2 border-slate-600 border-t-[#8B1E1E] rounded-full animate-spin"></div>
+          Loading Plan...
+      </div>
+  );
 
   const isEditable = plan.status === TourPlanStatus.DRAFT || plan.status === TourPlanStatus.REJECTED;
   const showJointWork = canApprove || user.role !== UserRole.MR;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="bg-[#0F172A]/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[calc(100vh-120px)] relative">
+      
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-[#8B1E1E] opacity-5 blur-[100px] pointer-events-none"></div>
+
+      {/* Header */}
+      <div className="flex justify-between items-center p-6 border-b border-slate-700/50 bg-slate-800/30 z-10">
         <div>
-          <h2 className="text-xl font-bold text-slate-800 flex items-center">
-            <Calendar className="mr-2 text-blue-600" />
+          <h2 className="text-2xl font-bold text-white flex items-center tracking-tight">
+            <Calendar className="mr-3 text-[#8B1E1E]" />
             Tour Plan: {getMonthName(nextMonth.month)} {nextMonth.year}
           </h2>
-          <p className="text-sm text-slate-500">Plan your visits for next month.</p>
+          <p className="text-sm text-slate-400 mt-1">Plan your territory visits and joint work.</p>
         </div>
-        <div className="flex gap-2">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center
-             ${plan.status === TourPlanStatus.APPROVED ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}
+        <div className="flex items-center gap-3">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold flex items-center border uppercase tracking-wide
+             ${plan.status === TourPlanStatus.APPROVED 
+                ? 'bg-green-900/30 text-green-400 border-green-800' 
+                : 'bg-amber-900/30 text-amber-400 border-amber-800'}
            `}>
             {plan.status}
           </span>
           {isEditable && (
             <>
-              <Button size="sm" variant="outline" onClick={handleSave}><Save size={16} className="mr-1" /> Save Draft</Button>
-              <Button size="sm" onClick={handleSubmit}>Submit</Button>
+              <Button size="sm" variant="outline" onClick={handleSave} className="border-slate-600 text-slate-300 hover:text-white">
+                  <Save size={16} className="mr-2" /> Save Draft
+              </Button>
+              <Button size="sm" onClick={handleSubmit} className="bg-[#8B1E1E] hover:bg-[#a02626] text-white border-none shadow-lg shadow-red-900/20">
+                  <Send size={16} className="mr-2" /> Submit
+              </Button>
             </>
           )}
           {canApprove && plan.status === TourPlanStatus.SUBMITTED && (
-            <Button size="sm" variant="success" onClick={handleApprove}><CheckCircle size={16} className="mr-1" /> Approve Plan</Button>
+            <Button size="sm" variant="success" onClick={handleApprove}>
+                <CheckCircle size={16} className="mr-2" /> Approve Plan
+            </Button>
           )}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-slate-50 border-b">
+      {/* Table Container */}
+      <div className="flex-1 overflow-auto custom-scrollbar p-0 z-0">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className="bg-[#020617] text-slate-400 sticky top-0 z-10 border-b border-slate-700 shadow-md">
             <tr>
-              <th className="p-3">Date</th>
-              <th className="p-3">Day</th>
-              <th className="p-3">Activity Type</th>
-              <th className="p-3">Territory</th>
-              {showJointWork && <th className="p-3">Joint Work</th>}
-              <th className="p-3">Notes</th>
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider w-16">Date</th>
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider w-20">Day</th>
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider w-32">Activity</th>
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider w-48">Territory</th>
+              {showJointWork && <th className="p-4 font-semibold uppercase text-xs tracking-wider w-48">Joint Work</th>}
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider">Notes</th>
+              <th className="p-4 font-semibold uppercase text-xs tracking-wider w-16">Route</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody className="divide-y divide-slate-800">
             {plan.entries.map((entry, idx) => {
               const date = new Date(entry.date);
               const isSunday = date.getDay() === 0;
               return (
-                <tr key={entry.date} className={isSunday ? 'bg-slate-50' : ''}>
-                  <td className="p-2 whitespace-nowrap">{date.getDate()}</td>
-                  <td className="p-2 whitespace-nowrap text-slate-500">{date.toLocaleDateString(undefined, { weekday: 'short' })}</td>
-                  <td className="p-2">
+                <tr key={entry.date} className={`transition-colors ${isSunday ? 'bg-slate-800/40' : 'hover:bg-white/5'}`}>
+                  <td className="p-3 whitespace-nowrap text-slate-300 font-mono text-center">{date.getDate()}</td>
+                  <td className={`p-3 whitespace-nowrap font-medium ${isSunday ? 'text-red-400' : 'text-slate-500'}`}>
+                      {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                  </td>
+                  <td className="p-3">
                     {isEditable ? (
                       <select
-                        className="border rounded p-1"
+                        className="bg-[#020617]/50 border border-slate-600 rounded text-slate-200 p-1.5 text-xs w-full focus:ring-1 focus:ring-[#8B1E1E] outline-none"
                         value={entry.activityType}
                         onChange={(e) => updateEntry(idx, 'activityType', e.target.value)}
                       >
@@ -160,13 +181,15 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
                         <option value="HOLIDAY">Holiday</option>
                         <option value="ADMIN_DAY">Admin Day</option>
                       </select>
-                    ) : entry.activityType}
+                    ) : (
+                        <span className="text-slate-300 bg-slate-800 px-2 py-1 rounded text-xs">{entry.activityType.replace('_', ' ')}</span>
+                    )}
                   </td>
-                  <td className="p-2">
+                  <td className="p-3">
                     {entry.activityType === 'FIELD_WORK' && (
                       isEditable ? (
                         <select
-                          className="border rounded p-1 w-40"
+                          className="bg-[#020617]/50 border border-slate-600 rounded text-slate-200 p-1.5 text-xs w-full focus:ring-1 focus:ring-[#8B1E1E] outline-none"
                           value={entry.territoryId || ''}
                           onChange={(e) => updateEntry(idx, 'territoryId', e.target.value)}
                         >
@@ -175,15 +198,15 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
                             <option key={t.id} value={t.id}>{t.name}</option>
                           ))}
                         </select>
-                      ) : entry.territoryName
+                      ) : <span className="text-white">{entry.territoryName}</span>
                     )}
                   </td>
                   {showJointWork && (
-                    <td className="p-2">
+                    <td className="p-3">
                       {entry.activityType === 'FIELD_WORK' && (
                         isEditable ? (
                           <select
-                            className="border rounded p-1 w-32"
+                            className="bg-[#020617]/50 border border-slate-600 rounded text-slate-200 p-1.5 text-xs w-full focus:ring-1 focus:ring-[#8B1E1E] outline-none"
                             value={entry.jointWorkWithUid || ''}
                             onChange={(e) => updateEntry(idx, 'jointWorkWithUid', e.target.value)}
                           >
@@ -193,30 +216,30 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
                             ))}
                           </select>
                         ) : (
-                          allUsers.find(u => u.uid === entry.jointWorkWithUid)?.displayName || '-'
+                          <span className="text-slate-400 text-xs">{allUsers.find(u => u.uid === entry.jointWorkWithUid)?.displayName || '-'}</span>
                         )
                       )}
                     </td>
                   )}
-                  <td className="p-2">
+                  <td className="p-3">
                     {isEditable ? (
                       <input
-                        className="border rounded p-1 w-full"
+                        className="bg-[#020617]/50 border border-slate-600 rounded text-slate-200 p-1.5 text-xs w-full focus:ring-1 focus:ring-[#8B1E1E] outline-none placeholder-slate-600"
                         value={entry.notes || ''}
                         onChange={(e) => updateEntry(idx, 'notes', e.target.value)}
+                        placeholder="Notes..."
                       />
-                    ) : entry.notes}
+                    ) : <span className="text-slate-400 text-xs italic">{entry.notes}</span>}
                   </td>
-                  <td className="p-2">
+                  <td className="p-3 text-center">
                     {entry.territoryId && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
+                      <button
                         title="Get Smart Route"
                         onClick={() => handleSuggestRoute(entry.date, entry.territoryId!)}
+                        className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:text-indigo-300 transition-colors"
                       >
-                        <MapPin size={16} className="text-indigo-600" />
-                      </Button>
+                        <Navigation size={14} />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -226,32 +249,39 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
         </table>
       </div>
 
+      {/* Smart Route Modal */}
       {suggestedRoute && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold flex items-center">
-                <MapPin className="mr-2 text-indigo-600" />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] animate-in fade-in duration-200">
+          <div className="bg-[#0F172A] border border-slate-700 rounded-2xl p-6 w-[450px] max-w-full shadow-2xl relative">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center">
+                <Navigation className="mr-2 text-[#8B1E1E]" size={20} />
                 Smart Route Suggestion
               </h3>
-              <button onClick={() => setSuggestedRoute(null)}><X size={20} /></button>
+              <button onClick={() => setSuggestedRoute(null)} className="text-slate-400 hover:text-white"><X size={20} /></button>
             </div>
-            <p className="text-sm text-slate-500 mb-4">
-              Optimized sequence for {new Date(suggestedRoute.date).toLocaleDateString()}:
+            
+            <p className="text-xs text-slate-400 mb-4 bg-slate-800/50 p-2 rounded border border-slate-700">
+              Optimized sequence for <span className="text-white font-bold">{new Date(suggestedRoute.date).toLocaleDateString()}</span> based on geo-locations.
             </p>
 
             {suggestedRoute.customers.length === 0 ? (
-              <p className="text-slate-500 italic">No customers found with location data in this territory.</p>
+              <div className="p-8 text-center text-slate-500 italic border border-dashed border-slate-700 rounded-lg">
+                  No customers found with location data in this territory.
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-0 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                 {suggestedRoute.customers.map((c, i) => (
-                  <div key={c.id} className="flex items-start">
-                    <div className="bg-indigo-100 text-indigo-700 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5 flex-shrink-0">
+                  <div key={c.id} className="flex items-start p-3 hover:bg-white/5 rounded-lg transition-colors relative group">
+                    {i !== suggestedRoute.customers.length - 1 && (
+                        <div className="absolute left-[19px] top-8 bottom-[-12px] w-0.5 bg-slate-700 group-hover:bg-slate-600 transition-colors"></div>
+                    )}
+                    <div className="bg-[#8B1E1E] text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 flex-shrink-0 shadow-lg shadow-red-900/30 z-10">
                       {i + 1}
                     </div>
                     <div>
-                      <div className="font-medium text-slate-800">{c.name}</div>
-                      <div className="text-xs text-slate-500">
+                      <div className="font-medium text-slate-200 text-sm">{c.name}</div>
+                      <div className="text-[10px] text-slate-500 mt-0.5">
                         {c.type} • Cat {c.category} • {c.specialty}
                       </div>
                     </div>
@@ -260,8 +290,8 @@ export const TourPlanner: React.FC<TourPlannerProps> = ({ user, canApprove }) =>
               </div>
             )}
 
-            <div className="mt-6 flex justify-end">
-              <Button onClick={() => setSuggestedRoute(null)}>Close</Button>
+            <div className="mt-6 flex justify-end pt-4 border-t border-slate-700/50">
+              <Button onClick={() => setSuggestedRoute(null)} className="bg-slate-700 hover:bg-slate-600 text-white border-none">Close</Button>
             </div>
           </div>
         </div>
