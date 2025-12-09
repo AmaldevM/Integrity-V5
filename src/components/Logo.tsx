@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const logoFallback = "../assets/icon.png";
+const logoFallback = "https://i.postimg.cc/3wd6f4yq/white-logo.png";
 
 interface LogoProps {
   className?: string;

@@ -9,23 +9,25 @@ export interface GeoLocation {
 
 export const getCurrentLocation = async (): Promise<GeoLocation> => {
     try {
-        // 1. Android/iOS: Check explicit permissions
+        // 1. Android/iOS: Explicitly Ask for Permission
+        // This is what triggers the "Allow while using app?" popup
         if (Capacitor.isNativePlatform()) {
             const permission = await Geolocation.checkPermissions();
+
             if (permission.location !== 'granted') {
                 const request = await Geolocation.requestPermissions();
                 if (request.location !== 'granted') {
-                    throw new Error('Location permission denied on device.');
+                    throw new Error('Location permission denied. Please enable it in Android Settings.');
                 }
             }
         }
 
-        // 2. Try High Accuracy first (Best for Phones)
+        // 2. Try High Accuracy First (Optimized for Mobile)
         try {
             const coordinates = await Geolocation.getCurrentPosition({
                 enableHighAccuracy: true,
-                timeout: 3000, // Try quickly for 3s
-                maximumAge: 0
+                timeout: 10000, // Wait 10s (Phones need time to find satellites)
+                maximumAge: 0   // Do not use old cached data
             });
             return {
                 lat: coordinates.coords.latitude,
@@ -33,15 +35,15 @@ export const getCurrentLocation = async (): Promise<GeoLocation> => {
                 accuracy: coordinates.coords.accuracy
             };
         } catch (err) {
-            console.warn("High accuracy failed/timed out. Switching to low accuracy...");
+            console.warn("High accuracy GPS timed out. Switching to network location...");
         }
 
-        // 3. FALLBACK: Low Accuracy (Best for PC/Indoor)
-        // We increase timeout to 30 seconds and allow cached positions
+        // 3. FALLBACK: Low Accuracy (Cell Towers / Wi-Fi)
+        // Works if user is indoors or GPS is weak
         const fallbackCoords = await Geolocation.getCurrentPosition({
             enableHighAccuracy: false,
-            timeout: 30000,       // Wait up to 30 seconds
-            maximumAge: Infinity  // Accept ANY cached location (instant)
+            timeout: 10000,
+            maximumAge: 30000 // Accept positions up to 30s old
         });
 
         return {
@@ -52,9 +54,13 @@ export const getCurrentLocation = async (): Promise<GeoLocation> => {
 
     } catch (error: any) {
         console.error("GPS Error:", error);
+
+        // Handle Browser Denial
         if (error.message && error.message.includes('User denied')) {
-            throw new Error('You denied location access. Click the Lock icon 🔒 in the URL bar.');
+            throw new Error('Location access denied. Please reset permissions in your browser.');
         }
-        throw new Error('Could not get location. Check Windows Location Settings.');
+
+        // Handle Mobile/General Errors
+        throw new Error('Could not fetch location. Ensure GPS is turned on.');
     }
 };
