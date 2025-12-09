@@ -9,25 +9,27 @@ export interface GeoLocation {
 
 export const getCurrentLocation = async (): Promise<GeoLocation> => {
     try {
-        // 1. Android/iOS: Explicitly Ask for Permission
-        // This is what triggers the "Allow while using app?" popup
+        // --- MOBILE PERMISSION LOGIC ---
+        // This part triggers the "Allow while using app?" popup on Android
         if (Capacitor.isNativePlatform()) {
-            const permission = await Geolocation.checkPermissions();
+            const status = await Geolocation.checkPermissions();
 
-            if (permission.location !== 'granted') {
+            // If not granted, we MUST ask for it
+            if (status.location !== 'granted') {
                 const request = await Geolocation.requestPermissions();
                 if (request.location !== 'granted') {
-                    throw new Error('Location permission denied. Please enable it in Android Settings.');
+                    throw new Error('Location permission was denied. Please enable it in Android Settings.');
                 }
             }
         }
 
-        // 2. Try High Accuracy First (Optimized for Mobile)
+        // --- ATTEMPT 1: High Accuracy (GPS Satellites) ---
+        // Best for field work. We give it 10 seconds to lock on.
         try {
             const coordinates = await Geolocation.getCurrentPosition({
                 enableHighAccuracy: true,
-                timeout: 10000, // Wait 10s (Phones need time to find satellites)
-                maximumAge: 0   // Do not use old cached data
+                timeout: 10000, // 10 seconds (Phones need time outdoors)
+                maximumAge: 0   // Force fresh data
             });
             return {
                 lat: coordinates.coords.latitude,
@@ -35,32 +37,28 @@ export const getCurrentLocation = async (): Promise<GeoLocation> => {
                 accuracy: coordinates.coords.accuracy
             };
         } catch (err) {
-            console.warn("High accuracy GPS timed out. Switching to network location...");
+            console.warn("GPS Satellites timed out. Switching to network location...");
         }
 
-        // 3. FALLBACK: Low Accuracy (Cell Towers / Wi-Fi)
-        // Works if user is indoors or GPS is weak
-        const fallbackCoords = await Geolocation.getCurrentPosition({
+        // --- ATTEMPT 2: Low Accuracy (Cell Towers / Wi-Fi) ---
+        // Fallback if inside a building or GPS is blocked
+        const fallback = await Geolocation.getCurrentPosition({
             enableHighAccuracy: false,
             timeout: 10000,
-            maximumAge: 30000 // Accept positions up to 30s old
+            maximumAge: 30000 // Accept position from 30s ago
         });
 
         return {
-            lat: fallbackCoords.coords.latitude,
-            lng: fallbackCoords.coords.longitude,
-            accuracy: fallbackCoords.coords.accuracy
+            lat: fallback.coords.latitude,
+            lng: fallback.coords.longitude,
+            accuracy: fallback.coords.accuracy
         };
 
     } catch (error: any) {
         console.error("GPS Error:", error);
-
-        // Handle Browser Denial
         if (error.message && error.message.includes('User denied')) {
-            throw new Error('Location access denied. Please reset permissions in your browser.');
+            throw new Error('Location denied. Please enable GPS.');
         }
-
-        // Handle Mobile/General Errors
-        throw new Error('Could not fetch location. Ensure GPS is turned on.');
+        throw new Error('Could not fetch location. Ensure GPS is on.');
     }
 };
