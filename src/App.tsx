@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SplashScreen } from '@capacitor/splash-screen';
 import {
   UserRole, UserProfile, Rates, MonthlyExpenseSheet, ExpenseStatus, ExpenseEntry, Notification, MonthlyTourPlan
 } from './types';
@@ -63,6 +64,14 @@ const App = () => {
 
   useEffect(() => {
     const init = async () => {
+      // --- FIX START: Hide Native Splash Immediately ---
+      try {
+        await SplashScreen.hide();
+      } catch (err) {
+        console.log('Splash screen already hidden or not available');
+      }
+      // --- FIX END ---
+
       try {
         const r = await getRates();
         setRates(r);
@@ -71,7 +80,11 @@ const App = () => {
       } catch (e) {
         console.warn("Offline initialization fallback", e);
       } finally {
-        setLoading(false);
+        // --- FIX START: Ensure Custom Screen shows for 1.5s ---
+        setTimeout(() => {
+          setLoading(false);
+        }, 1500);
+        // --- FIX END ---
       }
     };
     init();
@@ -179,7 +192,7 @@ const App = () => {
     alert(`Logged in as ${user.displayName}`);
   };
 
-  if (loading && !currentUser) return <LoadingScreen />;
+  if (loading) return <LoadingScreen />;
 
   if (!currentUser) {
     return <LoginPage onLoginSuccess={(user) => { setCurrentUser(user); setView('DASHBOARD'); }} />;
@@ -197,7 +210,7 @@ const App = () => {
   return (
     <div className="flex h-screen bg-[#020617] overflow-hidden">
       <NetworkStatus />
-      
+
       {/* 2. FIXED: Pass state and handler to Sidebar */}
       <Sidebar
         currentUser={currentUser}
@@ -213,15 +226,15 @@ const App = () => {
       <div className="flex-1 flex flex-col overflow-hidden relative">
         {/* 3. ADDED: Mobile Header Bar */}
         <header className="md:hidden bg-[#0F172A] border-b border-slate-700/50 p-4 flex items-center justify-between z-20">
-           <div className="flex items-center">
-             <button onClick={() => setIsSidebarOpen(true)} className="text-slate-300 mr-4">
-               <Menu size={24} />
-             </button>
-             <Logo className="h-6" variant="light"/>
-           </div>
-           <button onClick={handleLogout} className="text-slate-400">
-             <LogOut size={20} />
-           </button>
+          <div className="flex items-center">
+            <button onClick={() => setIsSidebarOpen(true)} className="text-slate-300 mr-4">
+              <Menu size={24} />
+            </button>
+            <Logo className="h-6" variant="light" />
+          </div>
+          <button onClick={handleLogout} className="text-slate-400">
+            <LogOut size={20} />
+          </button>
         </header>
 
         <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 custom-scrollbar bg-[#020617]">
@@ -233,35 +246,35 @@ const App = () => {
               {currentUser.role === UserRole.MR && <><MRAnalytics /><AttendancePanel user={currentUser} /></>}
             </div>
           )}
-          
+
           {view === 'ATTENDANCE' && <AttendancePanel user={currentUser} />}
           {view === 'TOUR_PLAN' && <TourPlanner user={currentUser} canApprove={false} />}
           {view === 'REPORTING' && <FieldReporting user={currentUser} />}
           {view === 'INVENTORY' && <InventoryPanel currentUser={currentUser} />}
           {view === 'SALES' && <ManagerDashboard user={currentUser} />}
-          
+
           {view === 'SETTINGS' && isAdmin && rates && <AdminSettings currentRates={rates} onSave={handleSaveRates} />}
           {view === 'USERS' && isAdmin && <UserManagement onLoginAs={handleLoginAs} />}
           {view === 'CLIENTS' && isAdmin && <ClientManagement />}
-          
+
           {view === 'PERFORMANCE' && <PerformanceDashboard user={currentUser} />}
           {view === 'APPRAISALS' && isAdmin && <AdminAppraisalView />}
-          
+
           {/* 4. FIXED: Conditional rendering for StockistPanel */}
-          {view === 'STOCKISTS' && <StockistPanel />} 
-          
+          {view === 'STOCKISTS' && <StockistPanel />}
+
           {view === 'SHEET' && activeSheet && rates && (
-            <ExpenseTable 
-                sheet={activeSheet} 
-                rates={rates} 
-                userRole={currentUser.role} 
-                userStatus={currentUser.status} 
-                isOwner={currentUser.uid === activeSheet.userId} 
-                territories={tableTerritories} 
-                onSave={handleSaveSheet} 
-                onSubmit={handleSubmitSheet} 
-                onApprove={handleApproveSheet} 
-                onReject={handleRejectSheet} 
+            <ExpenseTable
+              sheet={activeSheet}
+              rates={rates}
+              userRole={currentUser.role}
+              userStatus={currentUser.status}
+              isOwner={currentUser.uid === activeSheet.userId}
+              territories={tableTerritories}
+              onSave={handleSaveSheet}
+              onSubmit={handleSubmitSheet}
+              onApprove={handleApproveSheet}
+              onReject={handleRejectSheet}
             />
           )}
 
