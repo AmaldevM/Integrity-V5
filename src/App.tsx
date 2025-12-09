@@ -224,8 +224,8 @@ const App = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* 3. ADDED: Mobile Header Bar */}
-        <header className="md:hidden bg-[#0F172A] border-b border-slate-700/50 p-4 flex items-center justify-between z-20">
+        {/* Added 'pt-12' to push content down from the status bar */}
+        <header className="md:hidden bg-[#0F172A]/ border-b border-slate-700/50 p-4 pt-12 flex items-center justify-between z-20">
           <div className="flex items-center">
             <button onClick={() => setIsSidebarOpen(true)} className="text-slate-300 mr-4">
               <Menu size={24} />
