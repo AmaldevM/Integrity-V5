@@ -458,7 +458,7 @@ export const FieldReporting: React.FC<FieldReportingProps> = ({ user }) => {
 
                   <div className="space-y-4 mb-6">
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><Box size={12} className="mr-1.5" /> Products Discussed</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><Box size={12} className="mr-1.5" /> Products Discussed</label>
                       <input
                         className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-[#8B1E1E] outline-none placeholder-slate-600"
                         placeholder="e.g. CardioPlus, OrthoFix"
@@ -467,7 +467,7 @@ export const FieldReporting: React.FC<FieldReportingProps> = ({ user }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><MessageSquare size={12} className="mr-1.5" /> Feedback / Remarks</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><MessageSquare size={12} className="mr-1.5" /> Feedback / Remarks</label>
                       <textarea
                         className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-[#8B1E1E] outline-none placeholder-slate-600 min-h-[60px]"
                         placeholder="Doctor feedback..."
@@ -477,7 +477,7 @@ export const FieldReporting: React.FC<FieldReportingProps> = ({ user }) => {
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><ListTodo size={12} className="mr-1.5" /> Action Taken</label>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-1 flex items-center"><ListTodo size={12} className="mr-1.5" /> Action Taken</label>
                       <input
                         className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2.5 text-sm text-white focus:ring-1 focus:ring-[#8B1E1E] outline-none placeholder-slate-600"
                         placeholder="e.g. Requested samples next week"

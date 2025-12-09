@@ -202,6 +202,11 @@ export interface InventoryItem {
   name: string;
   type: InventoryType;
   unitPrice: number;
+  description?: string;
+
+  // (Keep your existing fields below, like batchNumber etc.)
+  batchNumber?: string;
+  expiryDate?: string;
 }
 
 export interface UserStock {

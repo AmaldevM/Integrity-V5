@@ -189,7 +189,7 @@ export const AdminAppraisalView: React.FC = () => {
                             {/* Rating Section */}
                             <div className="mb-8 relative z-10">
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Manager Rating</label>
-                                <div className="flex items-center gap-4 bg-[#020617]/30 p-4 rounded-xl border border-slate-800 inline-flex">
+                                <div className="inline-flex items-center gap-4 bg-[#020617]/30 p-4 rounded-xl border border-slate-800">
                                     <div className="flex gap-2">
                                         {[1, 2, 3, 4, 5].map(star => (
                                             <button
