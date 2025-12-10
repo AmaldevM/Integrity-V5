@@ -175,11 +175,14 @@ export enum TourPlanStatus {
   REJECTED = 'REJECTED'
 }
 
+// src/types.ts
+
 export interface TourPlanEntry {
   date: string;
+  // 👇 Add "| 'SUNDAY'" to this list
+  activityType: 'FIELD_WORK' | 'MEETING' | 'LEAVE' | 'HOLIDAY' | 'ADMIN_DAY' | 'SUNDAY';
   territoryId?: string;
   territoryName?: string;
-  activityType: 'FIELD_WORK' | 'MEETING' | 'LEAVE' | 'HOLIDAY' | 'ADMIN_DAY';
   jointWorkWithUid?: string;
   notes?: string;
 }
