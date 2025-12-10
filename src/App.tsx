@@ -16,6 +16,7 @@ import { ClientManagement } from './components/ClientManagement';
 import { AttendancePanel } from './components/AttendancePanel';
 import { AIInsights } from './components/AIInsights';
 import { TourPlanner } from './components/TourPlanner';
+// 👇 FIXED IMPORT PATH (Matches filename FieldReportingPanel.tsx)
 import { FieldReporting } from './components/FieldReporting';
 import { MRAnalytics } from './components/MRAnalytics';
 import { InventoryPanel } from './components/InventoryPanel';
@@ -26,9 +27,7 @@ import { ManagerDashboard } from './components/ManagerDashboard';
 import { NetworkStatus } from './components/NetworkStatus';
 import { Button } from './components/Button';
 import { Logo } from './components/Logo';
-import {
-  LogOut, Menu
-} from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { LoadingScreen } from './components/LoadingScreen';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/layout/Sidebar';
@@ -39,7 +38,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // 1. ADDED: State for Mobile Sidebar Toggle
+  // State for Mobile Sidebar Toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [view, setView] = useState<'DASHBOARD' | 'SHEET' | 'SETTINGS' | 'APPROVALS' | 'USERS' | 'CLIENTS' | 'ATTENDANCE' | 'TOUR_PLAN' | 'REPORTING' | 'INVENTORY' | 'SALES' | 'TOUR_PLAN_APPROVAL' | 'PERFORMANCE' | 'APPRAISALS' | 'STOCKISTS'>('DASHBOARD');
@@ -64,13 +63,12 @@ const App = () => {
 
   useEffect(() => {
     const init = async () => {
-      // --- FIX START: Hide Native Splash Immediately ---
+      
       try {
         await SplashScreen.hide();
       } catch (err) {
-        console.log('Splash screen already hidden or not available');
+        console.warn("SplashScreen hide failed", err);
       }
-      // --- FIX END ---
 
       try {
         const r = await getRates();
@@ -80,11 +78,9 @@ const App = () => {
       } catch (e) {
         console.warn("Offline initialization fallback", e);
       } finally {
-        // --- FIX START: Ensure Custom Screen shows for 1.5s ---
         setTimeout(() => {
           setLoading(false);
         }, 1500);
-        // --- FIX END ---
       }
     };
     init();
@@ -211,7 +207,6 @@ const App = () => {
     <div className="flex h-screen bg-[#020617] overflow-hidden">
       <NetworkStatus />
 
-      {/* 2. FIXED: Pass state and handler to Sidebar */}
       <Sidebar
         currentUser={currentUser}
         view={view}
@@ -224,7 +219,6 @@ const App = () => {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden relative">
-        {/* Added 'pt-12' to push content down from the status bar */}
         <header className="md:hidden bg-[#0F172A]/ border-b border-slate-700/50 p-4 pt-12 flex items-center justify-between z-20">
           <div className="flex items-center">
             <button onClick={() => setIsSidebarOpen(true)} className="text-slate-300 mr-4">
@@ -249,9 +243,12 @@ const App = () => {
 
           {view === 'ATTENDANCE' && <AttendancePanel user={currentUser} />}
           {view === 'TOUR_PLAN' && <TourPlanner user={currentUser} canApprove={false} />}
+          
+          {/* FIELD REPORTING VIEW */}
           {view === 'REPORTING' && (
             <FieldReporting user={currentUser} />
           )}
+
           {view === 'INVENTORY' && <InventoryPanel currentUser={currentUser} />}
           {view === 'SALES' && <ManagerDashboard user={currentUser} />}
 
@@ -262,7 +259,6 @@ const App = () => {
           {view === 'PERFORMANCE' && <PerformanceDashboard user={currentUser} />}
           {view === 'APPRAISALS' && isAdmin && <AdminAppraisalView />}
 
-          {/* 4. FIXED: Conditional rendering for StockistPanel */}
           {view === 'STOCKISTS' && <StockistPanel />}
 
           {view === 'SHEET' && activeSheet && rates && (

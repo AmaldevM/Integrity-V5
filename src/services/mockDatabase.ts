@@ -30,7 +30,6 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 // --- CONFIGURATION ---
-// In production, these should be in .env
 const firebaseConfig = {
     apiKey: "AIzaSyDummyKey",
     authDomain: "tertius-integrity.firebaseapp.com",
@@ -45,6 +44,8 @@ let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 let db: Firestore | undefined;
 
+// 👇 FIX: Commented out to prevent 30s timeout on startup
+/*
 try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
@@ -53,6 +54,7 @@ try {
 } catch (e) {
     console.warn("Firebase init failed (expected in pure offline/mock mode if no config)", e);
 }
+*/
 
 // --- CONSTANTS ---
 const USERS_COL = 'users';
@@ -88,7 +90,7 @@ const MOCK_USERS: UserProfile[] = [
         status: 'CONFIRMED' as any,
         hqLocation: 'Head Office',
         territories: [],
-        password: '123456' // 👈 Added Password
+        password: '123456'
     },
     {
         uid: 'asm1',
@@ -98,7 +100,7 @@ const MOCK_USERS: UserProfile[] = [
         status: 'CONFIRMED' as any,
         hqLocation: 'Delhi',
         territories: [{ id: 't1', name: 'North Delhi', category: ExpenseCategory.HQ, fixedKm: 0 }],
-        password: '123456' // 👈 Added Password
+        password: '123456'
     },
     {
         uid: 'mr1',
@@ -109,7 +111,7 @@ const MOCK_USERS: UserProfile[] = [
         hqLocation: 'Delhi',
         territories: [{ id: 't2', name: 'Rohini', category: ExpenseCategory.HQ, fixedKm: 0 }, { id: 't3', name: 'Pitampura', category: ExpenseCategory.EX_HQ, fixedKm: 20 }],
         reportingManagerId: 'asm1',
-        password: '123456' // 👈 Added Password
+        password: '123456'
     }
 ];
 
@@ -139,10 +141,13 @@ const sanitize = (obj: any): any => {
 };
 
 export const getUser = async (input?: string, password?: string): Promise<UserProfile | null> => {
-    if (!auth) return null;
+    // 👇 FIX: Removed "if (!auth) return null" so mock login works without Firebase
     try {
         // 1. Check for CURRENTLY LOGGED IN user (Auto-login)
         if (!input && !password) {
+            // Only try auto-login if Auth is actually initialized
+            if (!auth) return null;
+
             return new Promise((resolve) => {
                 const unsubscribe = onAuthStateChanged(auth!, async (user) => {
                     unsubscribe();
@@ -162,15 +167,14 @@ export const getUser = async (input?: string, password?: string): Promise<UserPr
             return { uid: 'admin_mohdshea', email: 'mohdshea@gmail.com', displayName: 'Mohd Shea (Super Admin)', role: UserRole.ADMIN, status: 'CONFIRMED' as any, hqLocation: 'Head Office', territories: [] };
         }
 
-        // 3. 👇 NEW: CHECK MOCK USERS ARRAY (The Fix)
+        // 3. CHECK MOCK USERS ARRAY
         if (input && password === '123456') {
             const mockUser = MOCK_USERS.find(u => u.email === input);
             if (mockUser) return mockUser;
         }
 
-        // 4. CHECK FIREBASE DATABASE (Your existing logic)
-        if (input && password && db) {
-            // ... (keep your existing database query logic here) ...
+        // 4. CHECK FIREBASE DATABASE (Only if online)
+        if (input && password && db && auth) {
             const q = query(collection(db, USERS_COL), where("email", "==", input));
             const snap = await getDocs(q);
             if (!snap.empty) {
@@ -419,7 +423,6 @@ export const getUserStock = async (userId: string): Promise<UserStock[]> => {
     return snap.docs.map(d => d.data() as UserStock);
 };
 
-// Updated signature to handle empty strings/undefined for Admin
 export const getStockTransactions = async (userId?: string): Promise<StockTransaction[]> => {
     if (!db) return [];
     const q = query(collection(db, TRANSACTIONS_COL), orderBy("date", "desc"));
@@ -429,7 +432,6 @@ export const getStockTransactions = async (userId?: string): Promise<StockTransa
     return all.filter(t => t.toUserId === userId || t.fromUserId === userId);
 };
 
-// Updated to take simplified object and construct Transaction
 export const distributeStock = async (params: { toUserId: string; itemId: string; quantity: number }): Promise<void> => {
     if (!db) return;
     const { toUserId, itemId, quantity } = params;
@@ -442,7 +444,7 @@ export const distributeStock = async (params: { toUserId: string; itemId: string
         id: uuidv4(),
         date: new Date().toISOString(),
         fromUserId: 'admin1',
-        toUserId, // Fixed Property Name
+        toUserId,
         itemId,
         itemName,
         quantity,
