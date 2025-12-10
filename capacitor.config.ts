@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   plugins: {
     SplashScreen: {
-      launchShowDuration: 3000,      // 1. Don't wait 3 seconds
+      launchShowDuration: 8000,      // 1. Don't wait 3 seconds
       launchAutoHide: true,      // 2. Let our React code hide it
       backgroundColor: "#020617", // 3. Match app color
       androidScaleType: "CENTER_CROP",

@@ -80,7 +80,7 @@ const App = () => {
       } finally {
         setTimeout(() => {
           setLoading(false);
-        }, 1500);
+        }, 3000);
       }
     };
     init();
