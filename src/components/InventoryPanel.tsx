@@ -34,7 +34,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ currentUser }) =
       setAllUsers(u);
     }
 
-   
+
     const targetUid = currentUser.role === UserRole.ADMIN ? '' : (currentUser.uid || '');
     const tx = await getStockTransactions(targetUid);
     setTransactions(tx);
@@ -45,7 +45,7 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ currentUser }) =
       alert("Please select user, item and quantity");
       return;
     }
-    
+
     await distributeStock({
       toUserId: selectedUser, // <--- FIXED HERE
       itemId: selectedItem,
@@ -209,8 +209,8 @@ export const InventoryPanel: React.FC<InventoryPanelProps> = ({ currentUser }) =
                       </td>
                       <td className="p-4">
                         <span className={`inline-flex items-center px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wide border ${isIssue
-                            ? 'bg-green-900/20 text-green-400 border-green-900/50'
-                            : 'bg-blue-900/20 text-blue-400 border-blue-900/50'
+                          ? 'bg-green-900/20 text-green-400 border-green-900/50'
+                          : 'bg-blue-900/20 text-blue-400 border-blue-900/50'
                           }`}>
                           {isIssue ? <ArrowDownLeft size={10} className="mr-1" /> : <ArrowUpRight size={10} className="mr-1" />}
                           {isIssue ? 'Stock In' : 'Stock Out'}
