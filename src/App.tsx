@@ -16,7 +16,7 @@ import { ClientManagement } from './components/ClientManagement';
 import { AttendancePanel } from './components/AttendancePanel';
 import { AIInsights } from './components/AIInsights';
 import { TourPlanner } from './components/TourPlanner';
-// 👇 FIXED IMPORT PATH (Matches filename FieldReportingPanel.tsx)
+// 👇 FIXED IMPORT: Pointing to the file we created earlier
 import { FieldReporting } from './components/FieldReporting';
 import { MRAnalytics } from './components/MRAnalytics';
 import { InventoryPanel } from './components/InventoryPanel';
@@ -31,6 +31,8 @@ import { LogOut, Menu } from 'lucide-react';
 import { LoadingScreen } from './components/LoadingScreen';
 import { LoginPage } from './components/LoginPage';
 import { Sidebar } from './components/layout/Sidebar';
+// 👇 NEW IMPORT
+import { MyExpenses } from './components/MyExpenses';
 
 const App = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -41,9 +43,10 @@ const App = () => {
   // State for Mobile Sidebar Toggle
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [view, setView] = useState<'DASHBOARD' | 'SHEET' | 'SETTINGS' | 'APPROVALS' | 'USERS' | 'CLIENTS' | 'ATTENDANCE' | 'TOUR_PLAN' | 'REPORTING' | 'INVENTORY' | 'SALES' | 'TOUR_PLAN_APPROVAL' | 'PERFORMANCE' | 'APPRAISALS' | 'STOCKISTS'>('DASHBOARD');
-  const [activeSheet, setActiveSheet] = useState<MonthlyExpenseSheet | null>(null);
+  // 👇 ADDED 'EXPENSES' TO THE VIEW LIST
+  const [view, setView] = useState<'DASHBOARD' | 'SHEET' | 'SETTINGS' | 'APPROVALS' | 'USERS' | 'CLIENTS' | 'ATTENDANCE' | 'TOUR_PLAN' | 'REPORTING' | 'INVENTORY' | 'SALES' | 'TOUR_PLAN_APPROVAL' | 'PERFORMANCE' | 'APPRAISALS' | 'STOCKISTS' | 'EXPENSES'>('DASHBOARD');
 
+  const [activeSheet, setActiveSheet] = useState<MonthlyExpenseSheet | null>(null);
   const [currentMonthSheet, setCurrentMonthSheet] = useState<MonthlyExpenseSheet | null>(null);
   const [pendingApprovals, setPendingApprovals] = useState<MonthlyExpenseSheet[]>([]);
   const [pendingTourPlans, setPendingTourPlans] = useState<MonthlyTourPlan[]>([]);
@@ -63,7 +66,7 @@ const App = () => {
 
   useEffect(() => {
     const init = async () => {
-      
+
       try {
         await SplashScreen.hide();
       } catch (err) {
@@ -243,10 +246,15 @@ const App = () => {
 
           {view === 'ATTENDANCE' && <AttendancePanel user={currentUser} />}
           {view === 'TOUR_PLAN' && <TourPlanner user={currentUser} canApprove={false} />}
-          
+
           {/* FIELD REPORTING VIEW */}
           {view === 'REPORTING' && (
             <FieldReporting user={currentUser} />
+          )}
+
+          {/* 👇 NEW EXPENSES VIEW */}
+          {view === 'EXPENSES' && (
+            <MyExpenses user={currentUser} />
           )}
 
           {view === 'INVENTORY' && <InventoryPanel currentUser={currentUser} />}
