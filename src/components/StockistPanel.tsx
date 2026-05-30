@@ -31,6 +31,7 @@ export const StockistPanel: React.FC = () => {
         const newStockist: Stockist = {
             id: uuidv4(),
             name: newStockistName,
+            gstin: '27MOCKGST1234Z5',
             territoryId: 'TERR-001', // Mock default
             currentStock: {}
         };
@@ -51,6 +52,7 @@ export const StockistPanel: React.FC = () => {
             id: uuidv4(),
             date: new Date().toISOString(),
             stockistId: selectedStockist.id,
+            invoiceNo: 'INV-' + Math.floor(100000 + Math.random() * 900000),
             items: saleItems.map(i => {
                 const p = MOCK_INVENTORY_ITEMS.find(prod => prod.id === i.itemId);
                 return { ...i, rate: p?.unitPrice || 0, amount: (p?.unitPrice || 0) * i.quantity };
@@ -78,8 +80,7 @@ export const StockistPanel: React.FC = () => {
             id: uuidv4(),
             date: new Date().toISOString(),
             stockistId: selectedStockist.id,
-            customerId: 'CUST-001',
-            mrId: 'MR-001', 
+            chemistName: 'Delhi Chemist (Mock)',
             items: saleItems.map(i => {
                 const p = MOCK_INVENTORY_ITEMS.find(prod => prod.id === i.itemId);
                 return { ...i, rate: p?.unitPrice || 0, amount: (p?.unitPrice || 0) * i.quantity };

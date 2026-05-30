@@ -8,7 +8,8 @@ export enum UserRole {
 
 export enum UserStatus {
   PROBATION = 'PROBATION',
-  CONFIRMED = 'CONFIRMED'
+  CONFIRMED = 'CONFIRMED',
+  TRAINEE = 'TRAINEE'
 }
 
 // 👇 UPDATED: Added all missing categories here
@@ -130,6 +131,7 @@ export interface UserProfile {
   hqLocation: string;
   hqLat?: number;
   hqLng?: number;
+  state?: string;
   territories: Territory[];
   reportingManagerId?: string;
   password?: string; // Only for mock auth
@@ -155,6 +157,7 @@ export interface InventoryItem {
   id: string;
   name: string;
   type: 'SAMPLE' | 'GIFT' | 'INPUT';
+  description?: string;
   unitPrice: number;
 }
 
@@ -266,15 +269,11 @@ export interface AppraisalRecord {
   userId: string;
   month: number;
   year: number;
-  managerId: string;
-  score: number; // 1-5
-  feedback: string;
-  paramScores: {
-    sales: number;
-    discipline: number;
-    reporting: number;
-    productKnowledge: number;
-  };
+  metrics: PerformanceMetrics;
+  adminRating: number;
+  managerRating?: number;
+  comments: string;
+  finalScore: number;
   createdAt: string;
 }
 
